@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ダメテトロシアンルーレット</title>
+<style>
+  :root { color-scheme: dark; --blue:#168bff; --brown:#a66a3f; }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; min-height:100vh; display:grid; place-items:center; padding:20px;
+    background:radial-gradient(ellipse at 50% 35%, #202b40 0%, #0b0e16 65%);
+    color:#f4f7ff; font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  main { width:min(760px,100%); text-align:center; }
+  h1 { margin:0 0 8px; font-size:clamp(1.7rem,5vw,2.7rem); letter-spacing:.04em; }
+  .sub { color:#b7c3d9; margin:0 0 24px; }
+  .stage {
+    position:relative; overflow:hidden; padding:26px 16px 22px; border:1px solid #36425a;
+    border-radius:22px; background:linear-gradient(145deg,#151d2c,#0c111b);
+    box-shadow:0 18px 55px #0008;
+  }
+  .beam { height:8px; margin:14px auto 24px; width:82%; border-radius:99px; background:#29344a; position:relative; }
+  .beam::after { content:""; position:absolute; inset:-3px 0; border-radius:99px; background:var(--glow,#168bff); opacity:.3; filter:blur(10px); }
+  .gun {
+    width:min(520px,94%); margin:0 auto; height:104px; position:relative;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .bodygun {
+    width:76%; height:48px; position:relative; border:2px solid #71819a; border-radius:9px 3px 3px 9px;
+    background:linear-gradient(#53647c,#202c3f 48%,#111a29);
+    box-shadow:inset 0 3px 6px #ffffff20, 0 8px 18px #0008;
+  }
+  .bodygun::before { content:""; position:absolute; left:10%; right:4%; top:8px; height:5px; background:#a8bad4; opacity:.55; }
+  .bodygun::after { content:""; position:absolute; left:18%; width:35%; bottom:-17px; height:17px; background:#35445b; border:1px solid #71819a; border-radius:0 0 5px 5px; }
+  .barrel { position:absolute; right:-14%; top:12px; width:22%; height:24px; border:2px solid #8496b2; border-radius:3px 10px 10px 3px; background:#0b101a; }
+  .muzzle { position:absolute; right:-16%; top:5px; width:12px; height:38px; border-radius:5px; background:#8496b2; }
+  .core { position:absolute; left:18%; top:14px; width:20px; height:20px; border-radius:50%; background:#9bd6ff; box-shadow:0 0 15px var(--glow,#168bff),0 0 35px var(--glow,#168bff); }
+  .shot { position:absolute; left:78%; top:37px; width:0; height:9px; border-radius:99px; background:var(--glow,#168bff); opacity:0; box-shadow:0 0 14px 5px var(--glow,#168bff); }
+  .firing .shot { animation:fire .55s ease-out forwards; }
+  .charging .core { animation:pulse .45s infinite alternate; }
+  @keyframes pulse { from { transform:scale(.75); opacity:.45; } to { transform:scale(1.25); opacity:1; } }
+  @keyframes fire { 0% { width:0; opacity:1; } 70% { width:70%; opacity:1; } 100% { width:78%; opacity:0; } }
+  .status { min-height:3.2em; margin:16px 0 8px; font-size:1.1rem; font-weight:700; }
+  button {
+    appearance:none; border:0; border-radius:12px; padding:14px 22px; font:inherit; font-weight:800;
+    color:#07111e; background:linear-gradient(135deg,#8bd0ff,#268cff); cursor:pointer;
+    box-shadow:0 5px 0 #14549a; transition:transform .1s,filter .1s;
+  }
+  button:hover { filter:brightness(1.1); } button:active { transform:translateY(3px); box-shadow:0 2px 0 #14549a; }
+  button:disabled { opacity:.55; cursor:wait; }
+  .odds { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:18px 0; text-align:left; }
+  .card { border:1px solid #39465d; border-radius:14px; padding:14px; background:#111927; }
+  .card strong { display:block; font-size:1.15rem; margin-bottom:5px; }
+  .blue { color:#65b7ff; } .brown { color:#d7a27d; }
+  .settings { margin-top:18px; text-align:left; border:1px solid #36425a; border-radius:16px; padding:16px; background:#0d1420; }
+  label { display:block; font-weight:700; margin:10px 0 6px; }
+  input, textarea { width:100%; border:1px solid #43516a; border-radius:9px; padding:10px; background:#090e17; color:#f4f7ff; font:inherit; }
+  textarea { min-height:100px; resize:vertical; }
+  .hint { font-size:.88rem; color:#aab6cb; line-height:1.55; }
+  .warning { margin-top:16px; font-size:.88rem; color:#d3d9e6; }
+  @media(max-width:520px) { .odds { grid-template-columns:1fr; } .stage { padding-inline:10px; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>💀 ダメテトロシアンルーレット</h1>
+  <p class="sub">No Think! ── 色が決まるまで、結果はわからない。</p>
+
+  <section class="stage" id="stage" aria-live="polite">
+    <div class="beam"></div>
+    <div class="gun" id="gun">
+      <div class="bodygun"><div class="core"></div><div class="barrel"></div><div class="muzzle"></div></div>
+      <div class="shot"></div>
+    </div>
+    <div class="beam"></div>
+    <div class="status" id="status">レールガン、待機中。</div>
+    <button id="fire">⚡ チャージして発射！</button>
+  </section>
+
+  <section class="odds">
+    <div class="card"><strong class="blue">🔵 青：94.71%</strong>メズマライザーが開く</div>
+    <div class="card"><strong class="brown">🟤 茶：5.29%</strong>ダメテトマカロン系が開く</div>
+  </section>
+
+  <details class="settings">
+    <summary><strong>⚙ URL設定（必要なら編集）</strong></summary>
+    <label for="safeUrl">青（94.71%）：メズマライザーURL</label>
+    <input id="safeUrl" type="url" value="https://www.youtube.com/watch?v=19y8YTbvri8">
+    <label for="badUrls">茶（5.29%）：ダメテトマカロン系URL（1行に1つ）</label>
+    <textarea id="badUrls" placeholder="https://www.youtube.com/watch?v=..."></textarea>
+    <p class="hint">茶色が出た場合、入力したURLの中からランダムに1つ選びます。URLはこのページを開いている間だけ保持されます。空欄の場合は茶色が出ても動画を開かず、結果だけ表示します。</p>
+  </details>
+
+  <p class="warning">音量注意：動画を開く前に、端末の音量を確認してください。ブラウザのポップアップ制限で新しいタブがブロックされる場合があります。</p>
+</main>
+<script>
+(() => {
+  const stage = document.getElementById('stage');
+  const gun = document.getElementById('gun');
+  const fireButton = document.getElementById('fire');
+  const status = document.getElementById('status');
+  let busy = false;
+
+  function validUrl(value) {
+    try {
+      const u = new URL(value.trim());
+      return u.protocol === 'https:' || u.protocol === 'http:';
+    } catch { return false; }
+  }
+
+  fireButton.addEventListener('click', () => {
+    if (busy) return;
+    busy = true;
+    fireButton.disabled = true;
+    stage.classList.remove('firing');
+    stage.classList.add('charging');
+    stage.style.setProperty('--glow', '#168bff');
+    status.textContent = 'チャージ中……結果を抽選しています。';
+
+    // 先に抽選し、チャージ演出のあと色で結果を表示
+    const brownHit = Math.random() < 0.0529;
+    window.setTimeout(() => {
+      stage.classList.remove('charging');
+      const color = brownHit ? '#a66a3f' : '#168bff';
+      stage.style.setProperty('--glow', color);
+      stage.classList.add('firing');
+
+      if (brownHit) {
+        status.textContent = '🟤 茶色に発光して発射！ ダメテトマカロン系……！';
+      } else {
+        status.textContent = '🔵 青く発光して発射！ メズマライザー！';
+      }
+
+      // 遷移先はユーザー操作（ボタン押下）から始める。少し待って別タブを開く。
+      window.setTimeout(() => {
+        let target = '';
+        if (brownHit) {
+          const entries = document.getElementById('badUrls').value
+            .split(/\r?\n/).map(s => s.trim()).filter(s => validUrl(s));
+          if (entries.length) target = entries[Math.floor(Math.random() * entries.length)];
+        } else {
+          const safe = document.getElementById('safeUrl').value.trim();
+          if (validUrl(safe)) target = safe;
+        }
+
+        if (target) {
+          const opened = window.open(target, '_blank', 'noopener');
+          if (!opened) status.textContent += '（ポップアップがブロックされたかも。ブラウザの設定を確認してね）';
+        } else if (brownHit) {
+          status.textContent += ' URL設定に有効なリンクがありません。';
+        } else {
+          status.textContent += ' メズマライザーURLを確認してね。';
+        }
+        busy = false;
+        fireButton.disabled = false;
+        fireButton.textContent = '🔁 もう一度チャージして発射';
+      }, 650);
+    }, 1450);
+  });
+})();
+</script>
+</body>
+</html>
